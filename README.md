@@ -12,7 +12,15 @@ An Lsystem generator that uses turtle interpretation of strings.
 * non-deterministic (Stochastic L-systems)
 * branching and non-branching (Bracketed OL-systems)
 
+### Features:
+
+* Includes 24 lsystem presets
+* GUI to switch through / modify the presets
+* Basic styling
+
 ### Features to be added:
+
+The ability to add your own presets through the GUI
 
 A decorations palette to add shapes / type with or without the lines.
 
