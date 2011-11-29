@@ -1,5 +1,7 @@
 /**
- * L-systems 0.1
+ * L-systems 0.2
+ * https://github.com/davidpaulrosser/Scriptographer-Scripts
+ * 
  * An Adobe Illustrator Scriptpgrapher 2.9.072 script 
  * 
  * Created by David Paul Rosser on 28/10/2011. Copyright 2011 David Paul Rosser.
@@ -345,40 +347,40 @@ lsystem.prototype.rule = function(production, sucessor, probability){
     if(probability){
                 
         for (var i = 0; i < probability.length; i++) {
-           totalWeights += probability[i];
+            totalWeights += probability[i];
         }
         
         if(totalWeights > 1) throw "The probabilities must add up to the sum of 1";
     }
    
-   /**
+    /**
     * lsystem rule getSucessor
     * @return sucessor {String} A sucessor to the production rule. If this is an Stochastic lsystem the outcome will be affected by the probability weights set for each sucessor
     */
-   this.getSucessor = function(){
+    this.getSucessor = function(){
        
-       if(probability){
+        if(probability){
            
-           var randomNum = Math.random()*totalWeights;
-           var randomProbability = "";
+            var randomNum = Math.random()*totalWeights;
+            var randomProbability = "";
 
-           for (var i = 0; i < this.probabilities.length; i++) {
+            for (var i = 0; i < this.probabilities.length; i++) {
 
-               if(randomNum >= this.probabilities[i]){
+                if(randomNum >= this.probabilities[i]){
 
-                   randomProbability = this.successor[i];
+                    randomProbability = this.successor[i];
 
-                   break;
-               }
-           }
+                    break;
+                }
+            }
            
-           return randomProbability;
+            return randomProbability;
  
-       } else {
+        } else {
            
-           return this.successor[0];
-       }      
-   }
+            return this.successor[0];
+        }      
+    }
 }
 
 /**
@@ -388,7 +390,7 @@ lsystem.prototype.rule = function(production, sucessor, probability){
  */
 lsystem.prototype.generate = function(iterations){
 
-    console.log('lsystems::generate() ' + this.id + " - generations:" + iterations);
+    print('lsystems::generate() ' + this.id + " - generations:" + iterations);
     
     var _iterations = Math.floor(iterations+1);
     var nextGeneration, currentGeneration;
@@ -424,7 +426,7 @@ lsystem.prototype.generate = function(iterations){
             }
         }
         
-        //print("Lsystems::generate() n:" + i + " " + currentGeneration);
+    //print("Lsystems::generate() n:" + i + " " + currentGeneration);
     }
         
     return currentGeneration;
@@ -445,38 +447,49 @@ var turtle = function(){
     this.currentState;
     
     this.init = function(){
-        this.resetStyles();
+        this.configureStyles();
     }
             
-    this.reset = function(){
+    this.resetStyles = function(){
+        
+        configure(paletteStylesValues, paletteStylesResetValues);
+        this.configureStyles();
+    }
+    
+    this.configureStyles = function(){
+        
+        // Set line fill
+        var fillColor = (paletteStylesValues.linesFill) ? fillColor = paletteStylesValues.fillColor : fillColor = null;
+        
+        this.style = {
+            strokeColor:paletteStylesValues.strokeColor,
+            fillColor: fillColor,
+            strokeWidth: paletteStylesValues.strokeWidth,
+            strokeCap:paletteStylesValues.strokeCap,
+            strokeJoin:paletteStylesValues.strokeJoin
+        }  
+    }
+    
+    this.reset = function(){        
         this.angle = 0;
         this.stepSize = 10;
         this.states = [];
-        this.currentState = null;
-    }
-    
-    this.resetStyles = function(){
-        this.style = {
-            strokeColor: new RGBColor([0,0,0]),
-            fillColor: null,
-            strokeWidth: 1,
-            strokeCap:"round",
-            strokeJoin:"round"
-        }  
+        this.currentState = null;  
     }
 }
 
 /**
  * turtle state
  * @param position {Point} - The current position of the turtle
+ * @param lastPosition {Point} - The last position of the turtle
  * @param angle {Number} - The current angle of the turtle
  */
 turtle.prototype.state = function(position, angle){
     this.position = new Point(position.x, position.y);
+    this.lastPosition = new Point(position.x, position.y);
     this.angle = angle;
 }
 var t = new turtle();
-t.init();
 
 /**
  * lsystem draw
@@ -487,10 +500,11 @@ t.init();
  * @param position {Point} - The inital turtle position
  */
 lsystem.prototype.draw = function(iterations, angle, startAngle, stepSize, position){
-    
+        
     this.iterations = iterations;
     
     t.reset();
+    t.configureStyles();
     t.angle = angle;
     t.stepSize = stepSize;
     t.states.push(new t.state(position, startAngle));
@@ -499,12 +513,20 @@ lsystem.prototype.draw = function(iterations, angle, startAngle, stepSize, posit
     var path = new Path();
     path.add(t.currentState.position);
     path.style = t.style;
+    
+    var text;
             
     this.turtleInstructions = this.generate(iterations);
                 
     for (var i = 0; i < this.turtleInstructions.length; i++) {
         
-        var command = this.commandsMap[this.turtleInstructions.charAt(i)];
+        var instruction = this.turtleInstructions.charAt(i);
+        var command = this.commandsMap[instruction];
+        
+        addStyles(command);
+        
+        t.currentState.lastPosition.x = t.currentState.position.x;
+        t.currentState.lastPosition.y = t.currentState.position.y;
                         
         switch(command){
             
@@ -574,6 +596,26 @@ lsystem.prototype.draw = function(iterations, angle, startAngle, stepSize, posit
         }
         
     }
+        
+    function addStyles(command){
+        
+        if(paletteStylesValues.type){
+            
+            if(text == undefined){
+                text = new PointText(t.currentState.position);
+            }
+
+            if(t.currentState.position != t.currentState.lastPosition){
+                text = new PointText(t.currentState.position);
+            }
+            
+            text.content += instruction;
+            
+            var textRange = text.range.words[0]; 
+            textRange.characterStyle.fontSize = paletteStylesValues.typeSize;
+            textRange.characterStyle.fillColor = paletteStylesValues.typeColor;
+        }
+    }
     
     function checkTurtleAngle(){
         if (t.currentState.angle > 360)
@@ -582,17 +624,36 @@ lsystem.prototype.draw = function(iterations, angle, startAngle, stepSize, posit
 }
 
 /**
- * Palette Window
+ * Palettes
  */
 var presetKeysArray = [];
 for(var key in presets){
     presetKeysArray.push(key);
 }
 
-var values = {};
-configure(values, activePreset);
+/**
+ * Settings
+ */
+var paletteSettingsValues = {};
+configure(paletteSettingsValues, activePreset);
 
-var components = {
+/**
+ * Styles
+ */
+var paletteStylesResetValues = {}, paletteStylesValues = {
+    strokeColor:new RGBColor([0,0,0]),
+    strokeWidth:0.2,
+    fillColor: new RGBColor([1,1,1]),
+    linesFill:false,
+    strokeCap:"round",
+    strokeJoin:"round",
+    type:true,
+    typeSize:3,
+    typeColor:new RGBColor([1,0,0])
+};
+configure(paletteStylesResetValues, paletteStylesValues);
+
+var paletteSettingsComponents = {
 
     presetsList:{
         type: "list", 
@@ -600,37 +661,28 @@ var components = {
         value:"Select a preset",
         options:presetKeysArray,
         onChange:function(value){
-            configure(activePreset, presets[value]);
-            configure(values, activePreset);
+            configure(paletteSettingsValues, presets[value]);
         }
     },
     iterations:{
         type:"number",
         label:"Iterations",
-        onChange:function(value){
-            activePreset.iterations = value;
-        }
+        value:paletteSettingsValues.iterations
     },
     angle:{
         type:"number",
         label:"Angle",
-        onChange:function(value){
-            activePreset.angle = values.angle;
-        }
+        value:paletteSettingsValues.angle
     },
     startingAngle:{
         type:"number",
         label:"Starting angle",
-        onChange:function(value){
-            activePreset.startingAngle = values.startingAngle;
-        }
+        value:paletteSettingsValues.startingAngle
     },
     stepSize:{
         type:"number",
         label:"Step size",
-        onChange:function(value){
-            activePreset.stepSize = values.stepSize;
-        }
+        value:paletteSettingsValues.stepSize
     },
     generate:{
         type:"button",
@@ -643,54 +695,79 @@ var components = {
     divider1:{
         type: 'ruler'
     },
-    lineColor:{
-      type:"color",
-      label:"Line color",
-      value:new RGBColor([0,0,0]),
-      onChange:function(color){
-        t.style.strokeColor = color;
-      }
-    },
-    lineWidth:{
-        type:"number",
-        label:"Line width",
-        value:1,
-        range:[0.1, 50],
-        fractionDigits:1,
-        increment:0.1,
-        onChange:function(value){
-            t.style.strokeWidth = value;
-        }
-    },
-    resetStyles:{
-        type:"button",
-        label:"",
-        value:"Reset style",
-        onClick:function(){
-            t.resetStyles();
-            values.lineColor = t.style.strokeColor;
-            values.lineWidth = t.style.strokeWidth;
-        }
-    },
-    divider2:{
-        type: 'ruler'
-    },
     text: {
         type: "text", 
         label: "",
-        value: "© DPR 2011"
+        value: "Lsystems.js 0.2"
     }
 };
 
-var palette = new Palette("Lsystem settings", components, values);
+var paletteStylesComponents = {
+    
+    linesFill:{
+        type:"checkbox",
+        label:"Lines fill",
+        value:paletteStylesValues.linesFill
+    },
+    strokeColor:{
+        type:"color",
+        label:"Line color",
+        value:paletteStylesValues.strokeColor
+    },
+    fillColor:{
+        type:"color",
+        label:"Fill color",
+        value:paletteStylesValues.fillColor
+    },
+    strokeWidth:{
+        type:"number",
+        label:"Line width",
+        value:paletteStylesValues.strokeWidth,
+        range:[0.1, 50],
+        fractionDigits:1,
+        increment:0.1
+    },
+    divider1:{
+        type:"ruler"  
+    },
+    type:{
+        type:"checkbox",
+        label:"Show type",
+        value:paletteStylesValues.type
+    },
+    typeColor:{
+        type:"color",
+        label:"Type color",
+        value:paletteStylesValues.typeColor
+    },
+    typeSize:{
+        type:"number",
+        label:"Type size",
+        value:paletteStylesValues.typeSize,
+        range:[0.1, 10],
+        increments:0.1
+    },
+    resetStyles:{
+        type:"button",
+        value:"Reset style",
+        onClick:function(){
+            t.resetStyles();
+        }
+    }
+};
+
+var settingsPalette = new Palette("Lsystem settings", paletteSettingsComponents, paletteSettingsValues);
+var stylesPalette = new Palette("Lsystem styles", paletteStylesComponents, paletteStylesValues);
 
 /**
  * Generate a new lsystem from the selected preset
  */
 function generatePreset(){
     
-    var id = presetKeysArray[components.presetsList.selectedIndex];
+    configure(activePreset, paletteSettingsValues);
     
+    var id = presetKeysArray[paletteSettingsComponents.presetsList.selectedIndex];
+        
     var ls = new lsystem(id, activePreset.axiom, activePreset.commandsMap);
     for (var i = 0; i < activePreset.rules.length; i++) {
         if(activePreset.rules[i].probability){
@@ -702,6 +779,7 @@ function generatePreset(){
     ls.draw(activePreset.iterations, activePreset.angle, activePreset.startingAngle, activePreset.stepSize, activePreset.position);
 }
 
+t.init();
 
 /**
  * Keyboard events
