@@ -15,13 +15,12 @@ An Lsystem generator that uses turtle interpretation of strings.
 ### Features:
 
 * Includes 24 Lsystem presets
-* GUI to switch through / modify the presets
-* Basic styling
+* GUI to style and select and modify presets
 
 ### Features to be added:
 
 The ability to add your own presets through the GUI.
 
-A decorations palette to add shapes / type with or without the lines.
+The option to add shapes
 
 Context sensitive and parametric support maybe.
