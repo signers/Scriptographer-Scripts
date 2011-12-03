@@ -794,7 +794,7 @@ function onKeyDown(event) {
  * Utils
  */
 function configure(config, settings) {
-			
+
     for(var prop in settings) {
         config[prop] = settings[prop];
     }
