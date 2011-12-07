@@ -1,5 +1,5 @@
 /**
- * L-systems 0.3
+ * L-systems 0.25
  * https://github.com/davidpaulrosser/Scriptographer-Scripts
  * 
  * An Adobe Illustrator Scriptpgrapher 2.9.072 script 
@@ -24,12 +24,13 @@
  * 
  */
 
-var VERSION = "Lsystems.js 0.3";
+var APP_NAME = "Lsystems.js";
+var VERSION = APP_NAME + " 0.25";
 
 /**
  * Utils
  */
-utils = {
+var utils = {
     
     /**
      * configure
@@ -42,170 +43,218 @@ utils = {
         for(var prop in settings) {
             config[prop] = settings[prop];
         }
+    },
+    
+    log:function(message){
+        print(APP_NAME + "::" + message);
+    },
+    
+    alert:function(messages){
+        
+        var str = "";
+        for(var i = 0; i < messages.length; i++){
+            str += messages[i] +"\n";
+        }
+        Dialog.alert("Warning \n" + str);
     }
 }
 
-
-var customLsystemsHelper = function(){
-    
-    var selectedIndex = 0;
-    var rulesList = [];
-    var productions = [];
-    var sucessors = [];
-    var probabilities = [];
-    
-    /**
-     * updateComponents
-     */
-    this.updateComponents = function(){
-        
-        paletteSettingsComponents.rulesList.options = this.getRulesList();        
-        paletteSettingsComponents.production.value = this.getProduction();        
-        paletteSettingsComponents.sucessor.value = this.getSucessor();        
-        paletteSettingsComponents.probabilities.value = this.getProbabilities(); 
-    }
-    
-    /**
-     * addRule
-     */
-    this.addRule = function(){
-               
-        rulesList.push("");
-        productions.push("");
-        sucessors.push("");
-        probabilities.push("");
-        this.updateComponents();
-    }
-    
-    /**
-     * removeRule
-     */
-    this.removeRule = function(){
-        print('removeRule');
-    }
-    
-    /**
-     * updateSelectedRule
-     */
-    this.updateSelectedRule = function(index){        
-        selectedIndex = index;
-    }
-    
-    /**
-     * setRulesList
-     * Set the settings palette rules list
-     */
-    this.setRulesList = function(rules){
-        
-        rulesList = [], productions = [], sucessors = [], probabilities = [];
-        selectedIndex = 0;
-        
-        var rule;
-        for (var i = 0; i < rules.length; i++) {
-            if(rules[i].probability){
-            
-                rule = rules[i].production + " = " + rules[i].sucessor + " | " + rules[i].probability;
-                rulesList.push(rule);
-                productions.push(rules[i].production);
-                sucessors.push(rules[i].sucessor);
-                probabilities.push(rules[i].probability);
-            
-            } else {
-            
-                rule = rules[i].production + " = " + rules[i].sucessor;
-                rulesList.push(rule);
-                productions.push(rules[i].production);
-                sucessors.push(rules[i].sucessor);
-            }
-        }
-        
-        this.updateComponents();       
-    }
-    
-    /**
-     * updateRulesList
-     */
-    this.updateRulesList = function(){
-        
-        if(this.getProbabilities().length > 0){
-            rulesList[selectedIndex] = this.getProduction() + " = " + this.getSucessor() + " | " + this.getProbabilities();        
-        } else {
-            rulesList[selectedIndex] = this.getProduction() + " = " + this.getSucessor();      
-        }
-       
-        this.updateComponents(); 
-    }
-
-    this.getRulesList = function(){
-        return rulesList;        
-    }
-
-    this.getRule = function(){
-        return rulesList[selectedIndex];
-    }
-
-    this.getProduction = function(){
-        return String(productions[selectedIndex]);        
-    }
-    
-    this.setProduction = function(production){
-        productions[selectedIndex] = production;  
-        this.updateRulesList();
-    }
-    
-    this.getSucessor = function(){
-        return String(sucessors[selectedIndex]);        
-    }
-    
-    this.setSucessor = function(sucessor){
-        sucessors[selectedIndex] = sucessor;  
-        this.updateRulesList();
-    }
-    
-    this.getProbabilities = function(){   
-        var str = String(probabilities[selectedIndex]);
-        return str = (str == "undefined") ? str = "" : str = str;
-    }
-    
-    this.setProbabilities = function(probabilities){
-        probabilities[selectedIndex] = probabilities; 
-        this.updateRulesList();
-    }
-}
-var customLSHelper = new customLsystemsHelper();
 
 /**
  * Presets
  */
 var presets = {}, activePreset = {};
 
-presets["Custom"] = {
+presets["Koch Curve"] = {
     axiom:"F",
     generations:4,
     angle:90,
     startingAngle:0,
     stepSize:10,
-    position:{
-        x:0, 
-        y:0
-    },
-    commandsMap:{
-        "F":"drawForward", 
-        "+":"turnLeft", 
-        "-":"turnRight"
-    },
-    rules:[{
-        production:"F", 
-        sucessor:["F+F-F-F+F"]
-    }, {
-        production:"X", 
-        sucessor:["YYY"]
-    }]
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward", "+":"turnLeft", "-":"turnRight"},
+    rules:[{production:"F", sucessor:["F+F-F-F+F"]}]
+};
+
+presets["Quadratic Koch Island"] = {
+    axiom:"F-F-F-F",
+    generations:4,
+    angle:90,
+    startingAngle:0,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward", "+":"turnLeft", "-":"turnRight"},
+    rules:[{production:"F", sucessor:["F-F+F+FF-F-F+F"]}]
+};
+
+presets["Koch Snowflake"] = {
+    axiom:"F--F--F",
+    generations:4,
+    angle:60,
+    startingAngle:0,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward", "+":"turnLeft", "-":"turnRight"},
+    rules:[{production:"F", sucessor:["F+F--F+F"]}]
+};
+
+presets["Koch AntiSnowflake"] = {
+    axiom:"F++F++F",
+    generations:4,
+    angle:60,
+    startingAngle:0,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward", "+":"turnLeft", "-":"turnRight"},
+    rules:[{production:"F", sucessor:["F+F--F+F"]}]
+};
+
+presets["Island and lakes"] = {
+    axiom:"F+F+F+F",
+    generations:2,
+    angle:90,
+    startingAngle:0,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward", "f":"moveForward", "+":"turnLeft", "-":"turnRight"},
+    rules:[{production:"F", sucessor:["F+f-FF+F+FF+Ff+FF-f+FF-F-FF-Ff-FFF"]}, {production:"f", sucessor:["ffffff"]}]
+};
+
+presets["Koch Curve Fig. 1.9 a"] = {
+    axiom:"F-F-F-F",
+    generations:3,
+    angle:90,
+    startingAngle:0,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward","+":"turnLeft", "-":"turnRight"},
+    rules:[{production:"F", sucessor:["FF-F-F-F-F-F+F"]}]
+};
+
+presets["Koch Curve Fig. 1.9 b"]= {
+    axiom:"F-F-F-F",
+    generations:4,
+    angle:90,
+    startingAngle:0,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward","+":"turnLeft", "-":"turnRight"},
+    rules:[{production:"F", sucessor:["FF-F-F-F-FF"]}]
+};
+
+presets["Koch Curve Fig. 1.9 c"]= {
+    axiom:"F-F-F-F",
+    generations:4,
+    angle:90,
+    startingAngle:0,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward","+":"turnLeft", "-":"turnRight"},
+    rules:[{production:"F", sucessor:["FF-F+F-F-FF"]}]
+};
+
+presets["Koch Curve Fig. 1.9 d"]= {
+    axiom:"F-F-F-F",
+    generations:4,
+    angle:90,
+    startingAngle:0,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward","+":"turnLeft", "-":"turnRight"},
+    rules:[{production:"F", sucessor:["FF-F--F-F"]}]
+};
+
+presets["Koch Curve Fig. 1.9 e"]= {
+    axiom:"F-F-F-F",
+    generations:5,
+    angle:90,
+    startingAngle:0,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward","+":"turnLeft", "-":"turnRight"},
+    rules:[{production:"F", sucessor:["F-FF--F-F"]}]
+};
+
+presets["Koch Curve Fig. 1.9 f"]= {
+    axiom:"F-F-F-F",
+    generations:5,
+    angle:90,
+    startingAngle:0,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward","+":"turnLeft", "-":"turnRight"},
+    rules:[{production:"F", sucessor:["F-F+F-F-F"]}]
+};
+
+presets["Plant Fig. 1.24 a"] = {
+    axiom:"F",
+    generations:5,
+    angle:27.5,
+    startingAngle:-90,
+    stepSize:10,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward", "+":"turnLeft", "-":"turnRight", "[":"pushState", "]":"popState"},
+    rules:[{production:"F", sucessor:["F[+F]F[-F]F"]}]
+};
+
+presets["Plant Fig. 1.24 b"] = {
+    axiom:"F",
+    generations:5,
+    angle:20,
+    startingAngle:-90,
+    stepSize:10,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward", "+":"turnLeft", "-":"turnRight", "[":"pushState", "]":"popState"},
+    rules:[{production:"F", sucessor:["F[+F]F[-F][F]"]}]
+};
+
+presets["Plant Fig. 1.24 c"] = {
+    axiom:"F",
+    generations:3,
+    angle:22.5,
+    startingAngle:-90,
+    stepSize:15,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward", "+":"turnLeft", "-":"turnRight", "[":"pushState", "]":"popState"},
+    rules:[{production:"F", sucessor:["FF-[-F+F+F]+[+F-F-F]"]}]
+};
+
+presets["Plant Fig. 1.24 d"] = {
+    axiom:"X",
+    generations:7,
+    angle:20,
+    startingAngle:-90,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward", "+":"turnLeft", "-":"turnRight", "[":"pushState", "]":"popState"},
+    rules:[{production:"X", sucessor:["F[+X]F[-X]+X"]}, {production:"F", sucessor:["FF"]}]
+};
+
+presets["Plant Fig. 1.24 e"] = {
+    axiom:"X",
+    generations:7,
+    angle:25.7,
+    startingAngle:-90,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward", "+":"turnLeft", "-":"turnRight", "[":"pushState", "]":"popState"},
+    rules:[{production:"X", sucessor:["F[+X][-X]FX"]}, {production:"F", sucessor:["FF"]}]
+};
+
+presets["Plant Fig. 1.24 f"] = {
+    axiom:"X",
+    generations:5,
+    angle:22.5,
+    startingAngle:-90,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward", "+":"turnLeft", "-":"turnRight", "[":"pushState", "]":"popState"},
+    rules:[{production:"X", sucessor:["F-[[X]+X]+F[+FX]-X"]}, {production:"F", sucessor:["FF"]}]
 };
 
 presets["Stochastic plant Fig. 1.27"] = {
     axiom:"F",
-    iterations:5,
+    generations:5,
     angle:22.5,
     startingAngle:-90,
     stepSize:5,
@@ -214,7 +263,74 @@ presets["Stochastic plant Fig. 1.27"] = {
     rules:[{production:"F", sucessor: ["F[+F]F[-F]F", "F[+F]F", "F[-F]F"], probability:[0.3, 0.3, 0.4]}]
 };
 
-utils.configure(activePreset, presets["Custom"]);
+presets["Sierpinski Triangle"] = {
+    axiom:"F-G-G",
+    generations:8,
+    angle:120,
+    startingAngle:180,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward", "G":"drawForward", "+":"turnLeft", "-":"turnRight"},
+    rules:[{production:"F", sucessor: ["F-G+F+G-F"]}, {production:"G", sucessor: ["GG"]}]
+};
+
+presets["Carpet"] = {
+    axiom:"F-F-F-F",
+    generations:4,
+    angle:90,
+    startingAngle:0,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward", "+":"turnLeft", "-":"turnRight", "[":"pushState", "]":"popState"},
+    rules:[{production:"F", sucessor: ["F[F]-F+F[--F]+F-F"]}]
+};
+
+presets["Dragon Curve"] = {
+    axiom:"FX",
+    generations:10,
+    angle:90,
+    startingAngle:0,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward", "+":"turnLeft", "-":"turnRight", "[":"pushState", "]":"popState"},
+    rules:[{production:"X", sucessor: ["X+YF"]}, {production:"Y", sucessor: ["FX-Y"]}]
+};
+
+presets["Levy Curve"] = {
+    axiom:"F",
+    generations:6,
+    angle:45,
+    startingAngle:0,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward", "+":"turnLeft", "-":"turnRight"},
+    rules:[{production:"F", sucessor: ["+F--F+"]}]
+};
+
+presets["McWorter's Pentigree"] = {
+    axiom:"F",
+    generations:3,
+    angle:36,
+    startingAngle:0,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward", "+":"turnLeft", "-":"turnRight"},
+    rules:[{production:"F", sucessor: ["+F++F----F--F++F++F-"]}]
+};
+
+presets["Pentadentrite"] = {
+    axiom:"F",
+    generations:3,
+    angle:72,
+    startingAngle:0,
+    stepSize:5,
+    position:{x:0, y:0},
+    commandsMap:{"F":"drawForward", "+":"turnLeft", "-":"turnRight"},
+    rules:[{production:"F", sucessor: ["F+F-F--F+F+F"]}]
+};
+
+utils.configure(activePreset, presets["Koch Curve"]);
+
 
 /**
  * lsystem generator
@@ -271,15 +387,15 @@ lsystem.prototype.rule = function(production, sucessor, probability){
             totalWeights += probability[i];
         }
         
-        if(totalWeights > 1) throw "The probabilities must add up to the sum of 1";
+        if(totalWeights > 1) utils.alert(['The probabilities must add up to the sum of 1']);
     }
    
     /**
-    * lsystem rule getSucessor
-    * @return sucessor {String} A sucessor to the production rule. If this is an Stochastic lsystem the outcome will be affected by the probability weights set for each sucessor
-    */
+     * lsystem rule getSucessor
+     * @return sucessor {String} A sucessor to the production rule. If this is an Stochastic lsystem the outcome will be affected by the probability weights set for each sucessor
+     */
     this.getSucessor = function(){
-       
+               
         if(probability){
            
             var randomNum = Math.random()*totalWeights;
@@ -294,7 +410,7 @@ lsystem.prototype.rule = function(production, sucessor, probability){
                     break;
                 }
             }
-           
+                       
             return randomProbability;
  
         } else {
@@ -310,8 +426,8 @@ lsystem.prototype.rule = function(production, sucessor, probability){
  * @return currentGeneration {String} - The current string generation
  */
 lsystem.prototype.generate = function(generations){
-
-    print('lsystems::generate() ' + this.id + " - generations:" + generations);
+    
+    utils.log('generate() ' + this.id + " - generations:" + generations);
     
     var _generations = Math.floor(generations+1);
     var nextGeneration, currentGeneration;
@@ -332,7 +448,7 @@ lsystem.prototype.generate = function(generations){
             for(var j = 0; j < nextGeneration.length; j++){
             
                 var character = nextGeneration.charAt(j);
-            
+                            
                 for(var k = 0; k < this.rules.length; k++){
                     
                     var production = this.rules[k].production;
@@ -347,7 +463,7 @@ lsystem.prototype.generate = function(generations){
             }
         }
         
-    //print("Lsystems::generate() n:" + i + " " + currentGeneration);
+        //print("Lsystems::generate() n:" + i + " " + currentGeneration);
     }
         
     return currentGeneration;
@@ -603,70 +719,12 @@ var paletteSettingsComponents = {
         fullSize:true,
         onChange:function(value){
             utils.configure(paletteSettingsValues, presets[value]);
-            customLSHelper.setRulesList(paletteSettingsValues.rules);
         }
     },
     axiom:{
         type:"string",
         label:"Axiom",
         value:paletteSettingsValues.axiom,
-        fullSize:true
-    },
-    rulesList:{
-        type: "list", 
-        label:"Rules",
-        options:[],
-        fullSize:true,
-        onChange:function(value){
-            customLSHelper.updateSelectedRule(paletteSettingsComponents.rulesList.selectedIndex);
-            customLSHelper.updateComponents();
-        }
-    },
-    production:{
-        type:"string",
-        label:"Production",
-        value:"",
-        fullSize:true,
-        onChange:function(value){
-            customLSHelper.setProduction(value)
-        }
-    },
-    sucessor:{
-        type:"string",
-        label:"Sucessor",
-        value:"",
-        fullSize:true,
-        onChange:function(value){
-            customLSHelper.setSucessor(value)
-        }
-    },
-    probabilities:{
-        type:"string",
-        label:"Probabilities",
-        value:"",
-        fullSize:true,
-        onChange:function(value){
-            customLSHelper.setProbabilities(value)
-        }
-    },
-    addRule:{
-        type:"button",
-        label:"",
-        value:"Add rule",
-        onClick:function(){
-            customLSHelper.addRule();
-        }
-    },
-    removeRule:{
-        type:"button",
-        label:"",
-        value:"Remove rule",
-        onClick:function(){
-            customLSHelper.removeRule();
-        }
-    },
-    divider1:{
-        type: "ruler",
         fullSize:true
     },
     generations:{
@@ -799,16 +857,17 @@ var stylesPalette = new Palette("Lsystem styles", paletteStylesComponents, palet
  * Generate a new lsystem from the selected preset
  */
 function generatePreset(){
+        
+    var id = presetKeysArray[paletteSettingsComponents.presetsList.selectedIndex];
     
     utils.configure(activePreset, paletteSettingsValues);
-    
-    var id = presetKeysArray[paletteSettingsComponents.presetsList.selectedIndex];
     
     if(ls) delete ls;
    
     ls = new lsystem(id, activePreset.axiom, activePreset.commandsMap);
-    for (var i = 0; i < activePreset.rules.length; i++) {
+    for (i = 0; i < activePreset.rules.length; i++) {
         if(activePreset.rules[i].probability){
+            
             ls.rules.push(new ls.rule(activePreset.rules[i].production, activePreset.rules[i].sucessor, activePreset.rules[i].probability));
         } else {
             ls.rules.push(new ls.rule(activePreset.rules[i].production, activePreset.rules[i].sucessor));
@@ -820,9 +879,6 @@ function generatePreset(){
 
 var ls, t = new turtle();
 t.init();
-paletteSettingsComponents.presetsList.onChange();
-
-
 
 /**
  * Keyboard events
@@ -832,13 +888,3 @@ function onKeyDown(event) {
         generatePreset();
     } 
 } 
-
-
-
-// settings helper
-
-// Get rulesList
-// Get rulesProduction
-// Get rulesSucessor
-// Get rulesProbabilities
-
