@@ -1,10 +1,6 @@
-# Scriptographer-Scripts
+# Lsystems.js
 
-A collection of scripts I've wrote for the Scriptographer Illustrator plugin.
-
-
-## Lsystems.js
-An Lsystem generator that uses turtle interpretation of strings. 
+A script based on Lindenmayer systems that generates fractal curves from a set of rules.
 
 ### It supports: 
 
@@ -16,11 +12,3 @@ An Lsystem generator that uses turtle interpretation of strings.
 
 * Includes 24 Lsystem presets
 * GUI to style, select and modify presets
-
-### Features to be added:
-
-The ability to add your own presets through the GUI
-
-The option to add shapes
-
-Context sensitive and parametric support maybe
