@@ -1,6 +1,7 @@
-# Lsystems.js
+## Lsystems.js
 
 A script based on Lindenmayer systems that generates fractal curves from a set of rules.
+
 
 ### It supports: 
 
